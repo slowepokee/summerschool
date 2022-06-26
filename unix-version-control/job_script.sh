@@ -1,8 +1,10 @@
 #!/bin/bash
 #SBATCH --job-name=example
-#SBATCH --account=<project>
-#SBATCH --partition=test
+#SBATCH --account=project_2000745
+#SBATCH --partition=large
 #SBATCH --time=00:05:00
-#SBATCH --nodes=1
-#SBATCH --ntasks=24
-#SBATCH --reservation=
+#SBATCH --ntasks=4
+#SBATCH --cpus-per-task=1
+#SBATCH --reservation=summerschool
+
+srun ./prog
