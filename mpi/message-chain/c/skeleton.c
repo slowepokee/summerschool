@@ -31,10 +31,15 @@ int main(int argc, char *argv[])
     // TODO: set source and destination ranks 
     // Treat boundaries with MPI_PROC_NULL
 
-    destination = 
+    destination = myid + 1;
+    source = myid - 1;
 
-    source = 
-
+    if (myid == 0){
+        source = MPI_PROC_NULL;
+    } else if (myid == (ntasks-1)){
+        destination = MPI_PROC_NULL;
+    }
+    //printf("%i", myid);
     // end TODO
 
 
@@ -43,12 +48,18 @@ int main(int argc, char *argv[])
     t0 = MPI_Wtime();
 
     // TODO: Send messages 
+    MPI_Sendrecv(message, msgsize, MPI_INT, destination, myid+1,
+                 receiveBuffer, msgsize, MPI_INT, source, MPI_ANY_TAG,
+                 MPI_COMM_WORLD, &status);
+    
 
     printf("Sender: %d. Sent elements: %d. Tag: %d. Receiver: %d\n",
-           myid, size, myid + 1, destination);
+           myid, msgsize, myid + 1, destination);
 
     // TODO: Receive messages
+    //MPI_Recv(receiveBuffer, msgsize, MPI_INT, source, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 
+    MPI_Barrier(MPI_COMM_WORLD);
     printf("Receiver: %d. first element %d.\n",
            myid, receiveBuffer[0]);
 

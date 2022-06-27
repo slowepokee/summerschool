@@ -33,10 +33,17 @@ int main(int argc, char *argv[])
 
     /* TODO: use a single collective communication call (and maybe prepare
      *       some parameters for the call) */
-
+    //MPI_Bcast(sendbuf, 2*NTASKS, MPI_INT, 0, MPI_COMM_WORLD);
+    //MPI_Scatter(sendbuf, 2, MPI_INT, recvbuf, 2, MPI_INT, 0, MPI_COMM_WORLD);
+    //int sendcount[] = {1,1,2,4};
+    //int dispal[] = {0,1,2,4};
+    //MPI_Gatherv(sendbuf, sendcount[rank], MPI_INT, recvbuf, sendcount, dispal, MPI_INT, 1, MPI_COMM_WORLD);
+    
+    MPI_Alltoall(sendbuf, 2, MPI_INT, recvbuf, 2, MPI_INT, MPI_COMM_WORLD);
+    
+    
     /* Print data that was received */
-    /* TODO: add correct buffer */
-    print_buffers(printbuf, ..., 2 * NTASKS);
+    print_buffers(printbuf, recvbuf, 2 * NTASKS);
 
     MPI_Finalize();
     return 0;
