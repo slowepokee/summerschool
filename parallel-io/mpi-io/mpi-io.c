@@ -8,7 +8,8 @@
 #define WRITER_ID   0
 
 void mpiio_writer(int, int *, int);
-
+void mpiio_reader(int, int *, int);
+void ordered_print(int, int, int *, int);
 
 int main(int argc, char *argv[])
 {
@@ -38,7 +39,9 @@ int main(int argc, char *argv[])
         localvector[i] = i + 1 + localsize * my_id;
     }
 
-    mpiio_writer(my_id, localvector, localsize);
+    mpiio_reader(my_id, localvector, localsize);
+
+    ordered_print(ntasks, my_id, localvector, localsize);
 
     free(localvector);
 
@@ -51,9 +54,53 @@ void mpiio_writer(int my_id, int *localvector, int localsize)
     MPI_File fh;
     MPI_Offset offset;
 
-    /* TODO: Write the data to  an output file "mpiio.dat" using MPI IO. Each
-             process should write their own local vectors to correct location
-             of the output file. */
+    //offset for each process
+    offset = sizeof(int)*localsize*my_id;
+
+
+    MPI_File_open(MPI_COMM_WORLD, "test_data", MPI_MODE_WRONLY | MPI_MODE_CREATE, MPI_INFO_NULL, &fh);
+
+
+    MPI_File_write_at_all(fh, offset, localvector, localsize, MPI_INT, MPI_STATUS_IGNORE);
+
+    MPI_File_close(&fh);
 
 
 }
+
+void mpiio_reader(int my_id, int *localvector, int localsize)
+{
+    MPI_File fh;
+    MPI_Offset offset;
+
+    //offset for each process
+    offset = sizeof(int)*localsize*my_id;
+
+
+    MPI_File_open(MPI_COMM_WORLD, "test_data", MPI_MODE_RDONLY, MPI_INFO_NULL, &fh);
+
+    //then read from all, with the given offsets
+    MPI_File_read_at_all(fh, offset, localvector, localsize, MPI_INT, MPI_STATUS_IGNORE);
+
+    MPI_File_close(&fh);
+
+
+}
+
+void ordered_print(int ntasks, int rank, int *buffer, int n)
+{
+    int task, i;
+
+    for (task = 0; task < ntasks; task++) {
+        if (rank == task) {
+            printf("Task %i received:", rank);
+            for (i = 0; i < n; i++) {
+                printf(" %2i", buffer[i]);
+            }
+            printf("\n");
+        }
+        MPI_Barrier(MPI_COMM_WORLD);
+    }
+}
+
+
