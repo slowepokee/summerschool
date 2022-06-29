@@ -2,12 +2,12 @@
 
 ### Getting started with OpenMP
 
-- [Hello world](omp-hello/)
-- [Work sharing and vector addition](work-sharing/)
+- ~~[Hello world](omp-hello/)~~
+- ~~[Work sharing and vector addition](work-sharing/)~~
 
 ### Library functions
 
-- [OpenMP library functions](lib-funcs/)
+- ~~[OpenMP library functions](lib-funcs/)~~
 
 ### Data sharing
 
@@ -26,7 +26,7 @@
 
 ### Hybrid MPI+OpenMP programming
 
-- [Hybrid Hello World](hybrid-hello/)
+- ~~[Hybrid Hello World](hybrid-hello/)~~
 - [Multiple thread communication](multiple-thread-communication/)
 
 ### OpenMP tasks
