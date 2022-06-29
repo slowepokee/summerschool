@@ -38,15 +38,36 @@ int main(int argc, char **argv)
     }
 
     // TODO create datatype 
+    //  each block is one element of the block row
+    // so one block per row
+    // then 1 is the number of elements in that block
+    // and 6 is the stride between blocks i.e. row length (in c)
+    MPI_Type_vector(8, 1, 6, MPI_INT, &vector);
+    MPI_Type_commit(&vector);
 
-    // Communicate with the datatype
-    if (rank == 0)
+    //MPI_Aint extent;
+    
+    //MPI_Type_get_extent(vector, 0, &extent);
+
+    MPI_Type_create_resized(vector, 0, sizeof(int), &vector2);
+    MPI_Type_commit(&vector2);
+    
+    
+    // Scatter the first two columns 
+    MPI_Scatter(sendarray, 2, vector2, recvarray, 2, vector2, 0, MPI_COMM_WORLD);
+    
+    // if (rank == 0){
+    //     MPI_Send(sendarray, 2, vector2, 1, 1, MPI_COMM_WORLD );
+    // }
         
-    else if (rank == 1)
+    // else if (rank == 1){
+    //     MPI_Recv(recvarray, 2, vector2, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    // }
         
 
     // free datatype
-
+    MPI_Type_free(&vector2);
+    MPI_Type_free(&vector);
     // TODO end
 
     if (rank == 1) {
@@ -58,7 +79,7 @@ int main(int argc, char **argv)
             printf("\n");
         }
     }
-
+    
     MPI_Finalize();
 
     return 0;

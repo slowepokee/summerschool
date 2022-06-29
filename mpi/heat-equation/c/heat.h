@@ -20,6 +20,7 @@ typedef struct {
     int size;                   /* Number of MPI tasks */
     int rank;
     int nup, ndown;      /* Ranks of neighbouring MPI tasks */
+    MPI_Comm comm;
 } parallel_data;
 
 

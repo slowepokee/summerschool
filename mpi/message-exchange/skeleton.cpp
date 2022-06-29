@@ -24,7 +24,9 @@ int main(int argc, char *argv[])
     // Send msgsize elements from the array "message", and receive into 
     // "receiveBuffer"
     if (myid == 0) {
-
+        MPI_Recv(*receiveBuffer, nrecv, MPI_INT, myid, );
+        
+        MPI_Send();
         printf("Rank %i received %i elements, first %i\n", myid, nrecv, receiveBuffer[0]);
     } else if (myid == 1) {
 

@@ -6,6 +6,7 @@ int main(int argc, char **argv)
     int rank;
     int array[8][8];
     //TODO: Declare a variable storing the MPI datatype
+    MPI_Datatype subtype;
 
     int i, j;
 
@@ -38,12 +39,25 @@ int main(int argc, char **argv)
     }
 
     //TODO: Create datatype 
-
+    int sub_size[2] = {8,1};
+    int sub_disp[2] = {0,1};
+    int arr_size[2] = {8,8};
+    MPI_Type_create_subarray(2, arr_size, sub_size, sub_disp, MPI_ORDER_C, MPI_INT, &subtype);
+    
+    MPI_Type_commit(&subtype);
     //TODO: Send data
 
+    if(rank == 1){
+        MPI_Recv(array, 1, subtype, 0, MPI_ANY_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    } else if (rank == 0){
+        MPI_Send(array, 1, subtype, 1, 4, MPI_COMM_WORLD);
+    }
+
     //TODO: Free datatype
+    MPI_Type_free(&subtype);
 
     // Print out the result on rank 1
+    MPI_Barrier(MPI_COMM_WORLD);
     if (rank == 1) {
         printf("Received data\n");
         for (i = 0; i < 8; i++) {

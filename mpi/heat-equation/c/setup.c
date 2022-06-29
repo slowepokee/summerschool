@@ -143,22 +143,17 @@ void set_field_dimensions(field *temperature, int nx, int ny,
 void parallel_setup(parallel_data *parallel, int nx, int ny)
 {
 
-    // TODO start: query number of MPI tasks, and rank and store them in
-    // parallel struct (size and rank members)
+    MPI_Comm_size(MPI_COMM_WORLD, &parallel->size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &parallel->rank);
 
-
-    // TODO end
     parallel_set_dimensions(parallel, nx, ny);
 
-    // TODO start
-    // Determine also up and down neighbours of this domain and store
-    // them in nup and ndown attributes, remember to cope with
-    // boundary domains appropriatly
+    int period[2] = {0,0};
+    MPI_Cart_create(MPI_COMM_WORLD, 1, &parallel->size, period, 0, &parallel->comm);
 
-    parallel->nup = 
-    parallel->ndown = 
 
-    // TODO end
+    MPI_Cart_shift(parallel->comm, 0, 1, &parallel->nup, &parallel->ndown); 
+
 }
 
 void parallel_set_dimensions(parallel_data *parallel, int nx, int ny)

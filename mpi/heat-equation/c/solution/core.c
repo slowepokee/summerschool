@@ -12,26 +12,26 @@
 void exchange(field *temperature, parallel_data *parallel)
 {
     double *data;  
-    double *sbuf_up, *sbuf_down, *rbuf_up, *rbuf_down;
+    double *sbuf, *rbuf;
 
     data = temperature->data;
 
     // Send to the up, receive from down
-    sbuf_up = data + temperature->ny + 2; // upper data
-    rbuf_down = data + (temperature->nx + 1) * (temperature->ny + 2); // lower halo
+    sbuf = data + temperature->ny + 2; // upper data
+    rbuf = data + (temperature->nx + 1) * (temperature->ny + 2); // lower halo
 
-    MPI_Sendrecv(sbuf_up, temperature->ny + 2, MPI_DOUBLE,
+    MPI_Sendrecv(sbuf, temperature->ny + 2, MPI_DOUBLE,
                  parallel->nup, 11,
-                 rbuf_down, temperature->ny + 2, MPI_DOUBLE, 
+                 rbuf, temperature->ny + 2, MPI_DOUBLE, 
                  parallel->ndown, 11, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
     // Send to the down, receive from up
-    sbuf_down = data + temperature->nx * (temperature->ny + 2); // lower data
-    rbuf_up = data; // upper halo
+    sbuf = data + temperature->nx * (temperature->ny + 2); // lower data
+    rbuf = data; // upper halo
 
-    MPI_Sendrecv(sbuf_down, temperature->ny + 2, MPI_DOUBLE, 
+    MPI_Sendrecv(sbuf, temperature->ny + 2, MPI_DOUBLE, 
                  parallel->ndown, 12,
-                 rbuf_up, temperature->ny + 2, MPI_DOUBLE,
+                 rbuf, temperature->ny + 2, MPI_DOUBLE,
                  parallel->nup, 12, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
 }
