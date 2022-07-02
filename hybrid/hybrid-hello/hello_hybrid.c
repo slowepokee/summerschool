@@ -14,7 +14,7 @@ int main(int argc, char **argv){
     #pragma omp parallel private(omp_rank)
     {
         omp_rank = omp_get_thread_num();
-        printf("I'm thread %d in process %d\n", omp_rank, my_id);
+        printf("I'm thread %d in process %d\n, I got %d", omp_rank, my_id, other_id);
     }
     
     MPI_Finalize();

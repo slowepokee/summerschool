@@ -7,7 +7,7 @@ COMMONDIR=../common
 ifeq ($(COMP),gnu)
 CXX=g++
 CC=gcc
-CCFLAGS=-g -O3 -march=native -Wall -I$(COMMONDIR) -DNDEBUG
+CCFLAGS=-g -O3 -march=native -Wall -I$(COMMONDIR) -DNDEBUG -fopenmp
 LDFLAGS=
 LIBS=-lpng
 endif
@@ -15,7 +15,7 @@ endif
 ifeq ($(COMP),intel)
 CXX=icpc
 CC=icc
-CCFLAGS=-g -O3 -xHost -I$(COMMONDIR) -DNDEBUG
+CCFLAGS=-g -O3 -xHost -I$(COMMONDIR) -DNDEBUG -fopenmp
 LDFLAGS=
 LIBS=-lpng
 endif

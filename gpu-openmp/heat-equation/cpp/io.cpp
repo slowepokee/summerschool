@@ -4,7 +4,6 @@
 #include <iomanip> 
 #include <fstream>
 #include <sstream>
-#include <mpi.h>
 
 #include "heat.hpp"
 #include "pngwriter.h"

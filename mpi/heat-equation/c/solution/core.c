@@ -12,27 +12,33 @@
 void exchange(field *temperature, parallel_data *parallel)
 {
     double *data;  
-    double *sbuf, *rbuf;
+    //double *sbuf_up, *sbuf_down, *rbuf_up, *rbuf_down;
 
+    // TODO start: implement halo exchange  
+    //data = temperature->data;
+    double *sbuf, *rbuf;
     data = temperature->data;
 
-    // Send to the up, receive from down
     sbuf = data + temperature->ny + 2; // upper data
     rbuf = data + (temperature->nx + 1) * (temperature->ny + 2); // lower halo
 
-    MPI_Sendrecv(sbuf, temperature->ny + 2, MPI_DOUBLE,
-                 parallel->nup, 11,
-                 rbuf, temperature->ny + 2, MPI_DOUBLE, 
-                 parallel->ndown, 11, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-    // Send to the down, receive from up
+    // Send to up, receive from down
+
+    MPI_Sendrecv(sbuf, temperature->ny + 2, MPI_DOUBLE, parallel->nup, 2,
+                 rbuf, temperature->ny + 2, MPI_DOUBLE, parallel->ndown, MPI_ANY_TAG,
+                 parallel->comm, MPI_STATUS_IGNORE);  
+
+    // Send to down, receive from up
     sbuf = data + temperature->nx * (temperature->ny + 2); // lower data
     rbuf = data; // upper halo
 
-    MPI_Sendrecv(sbuf, temperature->ny + 2, MPI_DOUBLE, 
-                 parallel->ndown, 12,
-                 rbuf, temperature->ny + 2, MPI_DOUBLE,
-                 parallel->nup, 12, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Sendrecv(sbuf, temperature->ny + 2, MPI_DOUBLE, parallel->ndown, 2,
+                 rbuf, temperature->ny + 2, MPI_DOUBLE, parallel->nup, MPI_ANY_TAG,
+                 parallel->comm, MPI_STATUS_IGNORE); 
+
+    // TODO end
+
 
 }
 

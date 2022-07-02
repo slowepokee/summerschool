@@ -1,6 +1,5 @@
 #include "heat.hpp"
 #include <iostream>
-#include <mpi.h>
 
 void Field::setup(int nx_in, int ny_in) 
 {

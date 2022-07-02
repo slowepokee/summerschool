@@ -1,6 +1,9 @@
 #include "constants.hpp"
 
 // TODO make mandelbrot a device function
+#pragma omp declare target
+int kernel(int xi, int yi);
+#pragma omp end declare target
 
 int kernel(int xi, int yi) {
   double x0 = xmin + xi * dx;

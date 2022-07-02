@@ -11,13 +11,13 @@
 
 ### Data sharing
 
-- [Data sharing and parallel regions](data-sharing/)
-- [Race condition in parallel sum](race-condition/)
+- ~~[Data sharing and parallel regions](data-sharing/)~~
+- ~~[Race condition in parallel sum](race-condition/)~~
 
 ### Reductions and execution controls
 
-- [Reduction](reduction/)
-- [Execution controls](execution-controls/)
+- ~~[Reduction](reduction/)~~
+- ~~[Execution controls](execution-controls/)~~
 
 ### Heat equation
 
@@ -27,13 +27,13 @@
 ### Hybrid MPI+OpenMP programming
 
 - ~~[Hybrid Hello World](hybrid-hello/)~~
-- [Multiple thread communication](multiple-thread-communication/)
+- ~~[Multiple thread communication](multiple-thread-communication/)~~
 
 ### OpenMP tasks
 
-- [Simple tasking](simple-tasks/)
-- [Parallelizing Mandelbrot with tasks](mandelbrot/)
-- [Parallel Fibonacci](fibonacci/)
+- ~~[Simple tasking](simple-tasks/)~~
+- ~~[Parallelizing Mandelbrot with tasks](mandelbrot/)~~
+- ~~[Parallel Fibonacci](fibonacci/)~~
 
 ### Heat equation
 
