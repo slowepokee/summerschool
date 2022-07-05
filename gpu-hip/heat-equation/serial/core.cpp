@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <hip/hip_runtime.h>
 
 #include "heat.h"
 
@@ -19,11 +20,25 @@ void evolve(field *curr, field *prev, double a, double dt)
   nx = curr->nx;
   ny = curr->ny;
 
+  
+
   /* Determine the temperature field at next time step
    * As we have fixed boundary conditions, the outermost gridpoints
    * are not updated. */
   dx2 = prev->dx * prev->dx;
   dy2 = prev->dy * prev->dy;
+
+  //Use one GPU?
+  //so make a kernel function out of the evolve part below
+  //choose some threads and blocks then
+
+  //we first need to copy the data to device
+  //then kernel
+  //then copy back to host
+
+  //unified memory??
+
+
   for (int i = 1; i < nx + 1; i++) {
     for (int j = 1; j < ny + 1; j++) {
       int ind = i * (ny + 2) + j;

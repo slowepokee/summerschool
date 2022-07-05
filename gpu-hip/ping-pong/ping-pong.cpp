@@ -70,12 +70,31 @@ void GPUtoGPUviaHost(int rank, double *hA, double *dA, int N, double &timer)
     //       host. Use the HIP kernel add_kernel() to increment values before
     //       sending them back to rank 0.
     if (rank == 0) {
-        // TODO: Copy vector to host and send it to rank 1
-        // TODO: Receive vector from rank 1 and copy it to the device
+        
+        //copy dA to hA, so device to host
+        hipMemcpy(hA, dA, N*sizeof(double), hipMemcpyDeviceToHost);
+        MPI_Send(hA, N, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD);
+        
+        
+        MPI_Recv(hA, N, MPI_DOUBLE, 1, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        hipMemcpy(dA, hA, N*sizeof(double), hipMemcpyHostToDevice);
+        //copy hA to dA, so host to device
+
+
     } else if (rank == 1) {
-        // TODO: Receive vector from rank 0 and copy it to the device
-        // TODO: Launch kernel to increment values on the GPU
-        // TODO: Copy vector to host and send it to rank 0
+        MPI_Recv(hA, N, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        
+        //copy to device
+        hipMemcpy(dA, hA, N*sizeof(double), hipMemcpyHostToDevice);
+
+        int blocks = 128;
+        int threads = 128;
+        hipLaunchKernelGGL(add_kernel, threads, blocks, 0, 0, dA, N);
+
+        //copy to host
+        hipMemcpy(hA, dA, N*sizeof(double), hipMemcpyDeviceToHost);
+
+        MPI_Send(dA, N, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD);
     }
 
     stop = MPI_Wtime();
@@ -92,12 +111,21 @@ void GPUtoGPUdirect(int rank, double *dA, int N, double &timer)
     // TODO: Implement a GPU-to-GPU ping-pong that communicates directly
     //       from GPU memory using HIP-aware MPI.
     if (rank == 0) {
+        MPI_Send(dA, N, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD);
         // TODO: Send vector to rank 1
         // TODO: Receive vector from rank 1
+        MPI_Recv(dA, N, MPI_DOUBLE, 1, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     } else if (rank == 1) {
+        int blocks = 128;
+        int threads = 128;
         // TODO: Receive vector from rank 0
+        MPI_Recv(dA, N, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         // TODO: Launch kernel to increment values on the GPU
+        hipLaunchKernelGGL(add_kernel, threads, blocks, 0, 0, dA, N);
+        hipStreamSynchronize(0);
+
         // TODO: Send vector to rank 0
+        MPI_Send(dA, N, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD);
     }
 
     stop = MPI_Wtime();
@@ -138,6 +166,9 @@ int main(int argc, char *argv[])
     hipHostMalloc((void **) &hA, sizeof(double) * N);
     hipMalloc((void **) &dA, sizeof(double) * N);
 
+    // Dummy transfer to remove the overhead of the first communication
+    CPUtoCPU(rank, hA, N, CPUtime);
+
     // Initialize the vectors
     for (int i = 0; i < N; ++i)
        hA[i] = 1.0;
@@ -152,7 +183,10 @@ int main(int argc, char *argv[])
         printf("CPU-CPU: time %f, errorsum %f\n", CPUtime, errorsum);
     }
 
+    // Dummy transfer to remove the overhead of the first communication
+    GPUtoGPUdirect(rank, dA, N, GPUtime);
     // Re-initialize the vectors
+    
     for (int i = 0; i < N; ++i)
        hA[i] = 1.0;
     hipMemcpy(dA, hA, sizeof(double) * N, hipMemcpyHostToDevice);
@@ -167,6 +201,8 @@ int main(int argc, char *argv[])
         printf("GPU-GPU direct: time %f, errorsum %f\n", GPUtime, errorsum);
     }
 
+    // Dummy transfer to remove the overhead of the first communication
+    GPUtoGPUviaHost(rank, hA, dA, N, GPUtime); 
     // Re-initialize the vectors
     for (int i = 0; i < N; ++i)
        hA[i] = 1.0;

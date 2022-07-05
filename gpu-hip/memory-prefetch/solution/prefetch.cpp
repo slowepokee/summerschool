@@ -29,7 +29,7 @@ void checkResults(int* const A, const int nx, const int ny, const std::string st
 
   // Indicate if the results are correct
   if(errored)
-    printf("The results are incorrect!/n");
+    printf("The results are incorrect!\n");
   else
     printf("The results are OK! (%.3fs - %s)\n", timing, strategy.c_str());
 }

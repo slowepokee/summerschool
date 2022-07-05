@@ -66,7 +66,8 @@ int main(int argc, char **argv)
   printf("  max error: %e\n", maxError(a, n));
 
   // TODO: Create `nStream` streams here (nStream is defined already to be 4)
-
+  hipStream_t stream[nStreams];
+  for (int i = 0; i < nStreams; i++) hipStreamCreate(&stream[i]);
   // Async case 1: loop over {kernel}
   {
     memset(a, 0, bytes);
@@ -75,7 +76,13 @@ int main(int argc, char **argv)
   
     // TODO: loop over nStreams and split the case 1 kernel for 4 kernel calls (one for each stream)
     // TODO: Each stream should handle 1/nStreams of work
-  
+    for(int i = 0; i < nStreams; i++){
+      //let's divide the workload using offset argument
+      int offset = n / nStreams * i;
+      hipLaunchKernelGGL(kernel, n/(nStreams * blockSize), blockSize, 0, stream[i], d_a, offset);
+    }
+
+    
     hipMemcpy(a, d_a, bytes, hipMemcpyDeviceToHost);
     hipEventRecord(stopEvent, 0);
     hipEventSynchronize(stopEvent);
@@ -87,12 +94,24 @@ int main(int argc, char **argv)
   // Async case 2: loop over {async copy, kernel, async copy}
 {
     memset(a, 0, bytes);
+    hipEventRecord(startEvent,0);
   
     // TODO: Same as case 1, except use asynchronous memcopies 
     // TODO: Here split also the memcopies for each stream 
     // TODO: Ie, looping over {async copy, kernel, async copy}
     // TODO: You should also add the missing hipEvent function calls (cf. case 1)
-
+    for(int i = 0; i < nStreams; i++){
+      int offset = n / nStreams * i;
+      //divide work evenly ny starting a and d_a from offset
+      //also note stream id at the end
+      hipMemcpyAsync(&d_a[offset], &a[offset], bytes/nStreams, hipMemcpyHostToDevice, stream[i]);
+      //let's divide the workload using offset argument
+      hipLaunchKernelGGL(kernel, n/(nStreams * blockSize), blockSize, 0, stream[i], d_a, offset);
+      hipMemcpyAsync(&a[offset], &d_a[offset], bytes/nStreams, hipMemcpyDeviceToHost, stream[i]);
+    }
+    hipEventRecord(stopEvent, 0);
+    hipEventSynchronize(stopEvent);
+    hipEventElapsedTime(&duration, startEvent, stopEvent);
     printf("Case 2 - Duration for asynchronous transfer+kernels: %f (ms)\n", duration);
     printf("  max error: %e\n", maxError(a, n));
   }
@@ -100,9 +119,33 @@ int main(int argc, char **argv)
   // Async case 3: loop over {async copy}, loop over {kernel}, loop over {async copy}
   {
     memset(a, 0, bytes);
+    hipEventRecord(startEvent,0);
     // TODO: Same as case 2, except create 3 loops over the streams
     // TODO: Ie, loop 1 {async copy} loop 2 {kernel}. loop 3 {async copy}
     // TODO: You should also add the missing hipEvent function calls (cf. case 1)
+    //--> timing here is a bit better, streams don't have to wait for other streams to be far enough along
+    
+    for(int i = 0; i < nStreams; i++){
+      int offset = n / nStreams * i;
+      //divide work evenly ny starting a and d_a from offset
+      //also note stream id at the end
+      hipMemcpyAsync(&d_a[offset], &a[offset], bytes/nStreams, hipMemcpyHostToDevice, stream[i]);
+    }
+
+    for(int i = 0; i < nStreams; i++){
+      int offset = n / nStreams * i;
+      hipLaunchKernelGGL(kernel, n/(nStreams * blockSize), blockSize, 0, stream[i], d_a, offset);
+    }
+
+    for(int i = 0; i < nStreams; i++){
+      int offset = n / nStreams * i;
+      hipMemcpyAsync(&a[offset], &d_a[offset], bytes/nStreams, hipMemcpyDeviceToHost, stream[i]);
+    }
+
+    hipEventRecord(stopEvent, 0);
+    hipEventSynchronize(stopEvent);
+    hipEventElapsedTime(&duration, startEvent, stopEvent);
+    
     
     printf("Case 3 - Duration for asynchronous transfer+kernels: %f (ms)\n", duration);
     printf("  max error: %e\n", maxError(a, n));
